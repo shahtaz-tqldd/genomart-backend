@@ -12,8 +12,8 @@ router
     UploadImageCloudinary.fields([{ name: "images", maxCount: 4 }]),
     ProductController.createProduct
   );
-router.route("/").get(auth(), ProductController.getAllProducts);
-router.route("/:id").get(auth(), ProductController.getSingleProduct);
+router.route("/").get(ProductController.getAllProducts);
+router.route("/:id").get(ProductController.getSingleProduct);
 router.route("/:id").delete(auth(), ProductController.deleteProduct);
 
 module.exports = router;
