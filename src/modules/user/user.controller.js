@@ -1,20 +1,40 @@
-const {paginationFields} = require("../../middlewares/helpers/paginationHelper");
+const {
+  paginationFields,
+} = require("../../middlewares/helpers/paginationHelper");
+const config = require("../../../config");
 const catchAsync = require("../../utiles/catchAsync");
 const pick = require("../../middlewares/helpers/pick");
 const sendResponse = require("../../utiles/sendResponse");
 const { userFilterableFields } = require("./user.constant");
 const UserService = require("./user.services");
+const AuthService = require("../auth/auth.service");
 
 const createUser = catchAsync(async (req, res, next) => {
-  const result = await UserService.createUserService(req.body);
+  await UserService.createUserService(req.body);
 
-  const { password, ...userData } = result._doc;
+  const { refreshToken, accessToken, user } = await AuthService.loginService({
+    email: req.body.email,
+    password: req.body.password,
+  });
+
+  const cookieOptions = {
+    secure: config.env === "production",
+    httpOnly: true,
+    sameSite: "strict",
+    secure: true,
+  };
+
+  res.cookie("refreshToken", refreshToken, cookieOptions);
+  res.cookie("accessToken", accessToken, cookieOptions);
 
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: "New user created",
-    data: userData,
+    message: "New user created and logged in!",
+    data: {
+      user,
+      token: accessToken,
+    },
   });
 });
 
@@ -37,7 +57,7 @@ const getAllUsers = catchAsync(async (req, res, next) => {
 
 const getMyProfile = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
-  
+
   const result = await UserService.getMyProfileService(userId);
 
   sendResponse(res, {

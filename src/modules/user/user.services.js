@@ -1,11 +1,10 @@
 const { default: mongoose } = require("mongoose");
-const { paginationHelpers } = require("../../middlewares/helpers/paginationHelper");
+const { calculatePagination } = require("../../middlewares/helpers/paginationHelper");
 const { userSearchableFields } = require("./user.constant");
 const User = require("./user.model");
 const { ApiError } = require("../../middlewares/errors/errors");
 
-const createUserService = async (payload, imageData) => {
-  console.log(payload)
+const createUserService = async (payload) => {
   const requiredFields = ["fullname", "email", "password"];
 
   for (const field of requiredFields) {
@@ -41,7 +40,7 @@ const getAllUsersService = async (filters, paginationOptions) => {
   const { searchTerm, ...filtersData } = filters;
 
   const { page, limit, skip, sortBy, sortOrder } =
-    paginationHelpers.calculatePagination(paginationOptions);
+    calculatePagination(paginationOptions);
 
   const aggregationPipeline = [];
   const matchStage = {};
