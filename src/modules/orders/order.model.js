@@ -1,0 +1,41 @@
+const mongoose = require("mongoose");
+
+const ProductSchema = mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  color: {
+    type: String,
+    required: true,
+  },
+  size: {
+    type: String,
+  },
+});
+
+const OrderSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    payment: {
+      type: String,
+      enum: ["cash", "online"],
+      required: true,
+    },
+    cost: {
+      type: String,
+      required: true,
+    },
+    products: [ProductSchema],
+  },
+  { timestamps: true, versionKey: false }
+);
+
+const Order = mongoose.model("Order", OrderSchema);
+
+module.exports = Order;
