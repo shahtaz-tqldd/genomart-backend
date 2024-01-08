@@ -1,4 +1,4 @@
-const paginationFields = require("../../middlewares/helpers/paginationHelper");
+const {paginationFields} = require("../../middlewares/helpers/paginationHelper");
 const catchAsync = require("../../utiles/catchAsync");
 const pick = require("../../middlewares/helpers/pick");
 const sendResponse = require("../../utiles/sendResponse");
@@ -6,18 +6,7 @@ const { userFilterableFields } = require("./user.constant");
 const UserService = require("./user.services");
 
 const createUser = catchAsync(async (req, res, next) => {
-  const file = req.file;
-
-  let imageData = {};
-
-  if (file?.path) {
-    imageData = {
-      url: file?.path,
-      public_id: file?.filename,
-    };
-  }
-
-  const result = await UserService.createUserService(req.body, imageData);
+  const result = await UserService.createUserService(req.body);
 
   const { password, ...userData } = result._doc;
 
@@ -48,7 +37,7 @@ const getAllUsers = catchAsync(async (req, res, next) => {
 
 const getMyProfile = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
-
+  
   const result = await UserService.getMyProfileService(userId);
 
   sendResponse(res, {

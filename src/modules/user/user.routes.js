@@ -5,11 +5,7 @@ const UserController = require("./user.controller");
 
 const router = express.Router();
 
-router.post(
-  "/",
-  UploadImageCloudinary.single("profileImage"),
-  UserController.createUser
-);
+router.post("/", UserController.createUser);
 
 router.get("/", UserController.getAllUsers);
 

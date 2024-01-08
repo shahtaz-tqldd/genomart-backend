@@ -5,7 +5,8 @@ const User = require("./user.model");
 const { ApiError } = require("../../middlewares/errors/errors");
 
 const createUserService = async (payload, imageData) => {
-  const requiredFields = ["fullName", "email", "password", "role"];
+  console.log(payload)
+  const requiredFields = ["fullname", "email", "password"];
 
   for (const field of requiredFields) {
     if (!payload[field]) {
@@ -19,17 +20,17 @@ const createUserService = async (payload, imageData) => {
     throw new ApiError(400, "Email already exist");
   }
 
-  if (!imageData.url) {
-    throw new ApiError(400, "Please provide profile image");
-  }
+  // if (!imageData.url) {
+  //   throw new ApiError(400, "Please provide profile image");
+  // }
 
   const newData = {
     ...payload,
   };
 
-  if (imageData.url) {
-    newData.profileImage = imageData;
-  }
+  // if (imageData.url) {
+  //   newData.profileImage = imageData;
+  // }
 
   const result = await User.create(newData);
 
