@@ -5,38 +5,57 @@ const {
 const { OrderSearchableFields } = require("./order.constant");
 const Order = require("./order.model");
 const { ApiError } = require("../../middlewares/errors/errors");
+const User = require("../user/user.model");
 
-const createOrderService = async (payload, imageData) => {
-  const requiredFields = ["name", "price", "stock", "category", "description"];
+const createOrderService = async (payload) => {
+  const user = await User.findById(payload.customer.id);
 
-  for (const field of requiredFields) {
-    if (!payload[field]) {
-      throw new ApiError(400, `Please provide ${field}`);
-    }
+  const total = await Order.countDocuments();
+  function geenrateId(id) {
+    return `#${("0000" + id).slice(-4)}`;
+  }
+  const sl = geenrateId(total + 1);
+
+  if (!user) {
+    throw new Error("User not found");
   }
 
-  const isExistProduct = await Order.findOne({ name: payload.name });
-
-  if (isExistProduct) {
-    throw new ApiError(400, "Product already exist");
+  if (payload.customer.address !== user?.address) {
+    user.address = payload.customer.address;
+  }
+  if (payload.customer.phone !== user?.phone) {
+    user.phone = payload.customer.phone;
+  }
+  if (payload.customer.house !== user?.house) {
+    user.house = payload.customer.house;
+  }
+  if (payload.customer.street !== user?.street) {
+    user.street = payload.customer.street;
   }
 
-  const newData = {
-    ...payload,
-    images: imageData,
+  // Save the updated user
+  await user.save();
+
+  // Create a new order
+  const orderData = {
+    user: payload.customer.id,
+    payment: payload.payment.method,
+    cost: payload.payment.total,
+    products: payload.products,
+    orderSl: sl,
   };
 
-  const result = await Order.create(newData);
+  const result = await Order.create(orderData);
 
   return result;
 };
 
 const getAllOrderService = async (filters, paginationOptions) => {
   const { searchTerm, ...filtersData } = filters;
-  const { page, limit, skip, sortBy, sortOrder } =
-    calculatePagination(paginationOptions);
-  const aggregationPipeline = [];
-  const matchStage = {};
+  const { page, limit, skip, sortBy, sortOrder } = calculatePagination(
+    paginationOptions
+  );
+  const query = {};
 
   if (searchTerm) {
     const searchConditions = OrderSearchableFields.map((field) => ({
@@ -46,42 +65,30 @@ const getAllOrderService = async (filters, paginationOptions) => {
       },
     }));
 
-    matchStage.$or = searchConditions;
+    query.$or = searchConditions;
   }
   if (Object.keys(filtersData).length) {
-    matchStage.$and = Object.entries(filtersData).map(([field, value]) => ({
+    query.$and = Object.entries(filtersData).map(([field, value]) => ({
       [field]: value,
     }));
   }
 
-  if (Object.keys(matchStage).length > 0) {
-    aggregationPipeline.push({ $match: matchStage });
-  }
+  const result = await Order.find(query)
+    .sort({ [sortBy]: sortOrder })
+    .skip(skip)
+    .limit(limit)
+    .populate({
+      path: "products.productId",
+      select: "name images category price brand", 
+      options: { virtuals: true },
+    })
+    .populate({
+      path: "user",
+      select: "fullname email address",
+    })
+    .exec();
 
-  // Sort Stage
-  const sortConditions = {};
-
-  // Dynamic sort needs fields to do sorting
-  if (sortBy && sortOrder) {
-    sortConditions[sortBy] = sortOrder;
-  }
-
-  // Add Sort Stage to Aggregation Pipeline
-  if (Object.keys(sortConditions).length > 0) {
-    aggregationPipeline.push({ $sort: sortConditions });
-  }
-
-  // Pagination Stage
-  aggregationPipeline.push({ $skip: skip });
-  aggregationPipeline.push({ $limit: limit });
-  aggregationPipeline.push({
-    $project: {
-      password: 0,
-    },
-  });
-
-  const result = await Order.aggregate(aggregationPipeline);
-  const total = await Order.countDocuments(matchStage);
+  const total = await Order.countDocuments(query);
 
   return {
     meta: {
@@ -92,6 +99,7 @@ const getAllOrderService = async (filters, paginationOptions) => {
     data: result,
   };
 };
+
 
 const deleteOrderService = async (id) => {
   const result = await Order.findByIdAndDelete(id);
@@ -110,7 +118,7 @@ const getSingleOrderService = async (productId) => {
   return result[0];
 };
 
-const updateOrderService = async(orderId, payload)=> {
+const updateOrderService = async (orderId, payload) => {
   const id = new mongoose.Types.ObjectId(userId);
 
   if (imageData?.url) {
@@ -132,7 +140,7 @@ const updateOrderService = async(orderId, payload)=> {
   } catch (error) {
     throw new ApiError(500, "Internal Server Error", error);
   }
-}
+};
 
 module.exports = {
   createOrderService,

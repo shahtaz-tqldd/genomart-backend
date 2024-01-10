@@ -74,11 +74,6 @@ const getAllProductService = async (filters, paginationOptions) => {
   // Pagination Stage
   aggregationPipeline.push({ $skip: skip });
   aggregationPipeline.push({ $limit: limit });
-  aggregationPipeline.push({
-    $project: {
-      password: 0,
-    },
-  });
 
   const result = await Product.aggregate(aggregationPipeline);
   const total = await Product.countDocuments(matchStage);

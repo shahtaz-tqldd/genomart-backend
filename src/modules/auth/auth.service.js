@@ -16,11 +16,11 @@ const loginService = async (payload) => {
   }
 
   const { _id, role } = isExistUser;
-
-  const isMatchPassword = await bcrypt.compare(password, isExistUser.password);
+  
+  const isMatchPassword = await bcrypt.compare(password, isExistUser?.password);
 
   if (!isMatchPassword) {
-    throw new ApiError(400, "Invalid credentials");
+    throw new ApiError(400, "Password is not correct!");
   }
 
   const accessToken = jwtHelpers.createToken(

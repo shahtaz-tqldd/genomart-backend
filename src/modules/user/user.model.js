@@ -36,8 +36,7 @@ const userSchema = new mongoose.Schema(
       enum: ["Super Admin", "Admin", "User", "Seller"],
       default: "User",
     },
-
-    profileImage: {
+    image: {
       public_id: {
         type: String,
       },
@@ -50,10 +49,13 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function (next) {
-  this.password = await bcrypt.hash(
-    this.password,
-    Number(config.bcrypt_salt_rounds)
-  );
+  // Check if the password field is modified or if it's a new user
+  if (this.isModified("password") || this.isNew) {
+    this.password = await bcrypt.hash(
+      this.password,
+      Number(config.bcrypt_salt_rounds)
+    );
+  }
 
   next();
 });

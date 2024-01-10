@@ -8,7 +8,6 @@ const ProductSchema = mongoose.Schema({
   },
   color: {
     type: String,
-    required: true,
   },
   size: {
     type: String,
@@ -30,6 +29,9 @@ const OrderSchema = new mongoose.Schema(
     cost: {
       type: String,
       required: true,
+    },
+    orderSl: {
+      type: String,
     },
     products: [ProductSchema],
   },

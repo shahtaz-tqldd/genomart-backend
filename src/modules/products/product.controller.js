@@ -66,7 +66,6 @@ const deleteProduct = catchAsync(async (req, res, next) => {
 
 const getSingleProduct = catchAsync(async (req, res, next) => {
   const productId = req.params.id;
-  console.log(productId)
   const result = await ProductService.getSingleProductService(productId);
 
   sendResponse(res, {

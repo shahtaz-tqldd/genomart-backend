@@ -43,11 +43,18 @@ const productSchema = new mongoose.Schema(
     specialOffer: {
       type: String,
     },
+    brand: {
+      type: String,
+    },
     description: {
       type: String,
     },
     specs: {
       type: String,
+    },
+    numSold: {
+      type: Number,
+      default: 0,
     },
 
     images: [imageSchema],
