@@ -33,6 +33,11 @@ const OrderSchema = new mongoose.Schema(
     orderSl: {
       type: String,
     },
+    status: {
+      type: String,
+      enum: ["pending", "processing", "sent", "completed", "cancel", "refund"],
+      default: "pending",
+    },
     products: [ProductSchema],
   },
   { timestamps: true, versionKey: false }
