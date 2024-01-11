@@ -105,17 +105,33 @@ const getSingleProductService = async (productId) => {
   return result[0];
 };
 
-// const getMyProfileService = async (userId) => {
-//   const result = await User.findById(userId);
+const getAllCategoryService = async () => {
+  const result = await Product.aggregate([
+    {
+      $group: {
+        _id: "$category",
+        count: { $sum: 1 },
+        image: { $first: "$images.url" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        category: "$_id",
+        count: 1,
+        image: 1,
+      },
+    },
+  ]);
 
-//   if (!result) {
-//     throw new ApiError(404, "User not found");
-//   }
+  return result.map((r) => ({
+    category: r?.category,
+    image: r?.image[0],
+    totalProducts: r.count,
+  }));
+};
 
-//   return result;
-// };
-
-// async function updateUserService(userId, updateData, imageData) {
+// const updateUserService = async(userId, updateData, imageData)=> {
 //   const id = new mongoose.Types.ObjectId(userId);
 
 //   if (imageData?.url) {
@@ -144,6 +160,6 @@ module.exports = {
   getAllProductService,
   deleteProductService,
   getSingleProductService,
-  // getMyProfileService,
+  getAllCategoryService,
   // updateUserService,
 };

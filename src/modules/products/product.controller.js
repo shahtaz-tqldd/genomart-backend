@@ -76,22 +76,17 @@ const getSingleProduct = catchAsync(async (req, res, next) => {
   });
 });
 
-// const getMyProfile = catchAsync(async (req, res, next) => {
-//   const userId = req.user._id;
+const getAllCategories = catchAsync(async (req, res, next) => {
+  const result = await ProductService.getAllCategoryService();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "All Categories",
+    data: result,
+  });
+});
 
-//   const result = await UserService.getMyProfileService(userId);
-
-//   sendResponse(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: "My Profile",
-//     data: result,
-//   });
-// });
-
-
-
-// const updateUser = catchAsync(async (req, res, next) => {
+// const updateProduct = catchAsync(async (req, res, next) => {
 //   const file = req.file;
 
 //   let imageData = {};
@@ -124,8 +119,7 @@ module.exports = {
   createProduct,
   getAllProducts,
   deleteProduct,
-  getSingleProduct
-  // getMyProfile,
-  // getSingleUser,
+  getSingleProduct,
+  getAllCategories,
   // updateUser,
 };

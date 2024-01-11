@@ -13,6 +13,7 @@ router
     ProductController.createProduct
   );
 router.route("/").get(ProductController.getAllProducts);
+router.route("/categories").get(ProductController.getAllCategories);
 router.route("/:id").get(ProductController.getSingleProduct);
 router.route("/:id").delete(auth(), ProductController.deleteProduct);
 
