@@ -3,6 +3,7 @@ const { ApiError } = require("../../middlewares/errors/errors");
 const Product = require("../products/product.model");
 const User = require("../user/user.model");
 const Order = require("../orders/order.model");
+const Info = require("./dashboard.model");
 
 const getStatsService = async () => {
   const totalProducts = await Product.countDocuments();
@@ -38,6 +39,18 @@ const getStatsService = async () => {
   };
 };
 
+const createBannerService = async (payload) => {
+  let info = await Info.findOne();
+  if (!info) {
+    info = await Info.create({});
+  }
+
+  info.banners = payload
+  const updatedInfo = await info.save();
+  return updatedInfo;
+};
+
 module.exports = {
   getStatsService,
+  createBannerService,
 };

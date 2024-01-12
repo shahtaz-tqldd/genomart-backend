@@ -6,6 +6,7 @@ const ProductService = require("./product.services");
 const {
   paginationFields,
 } = require("../../middlewares/helpers/paginationHelper");
+const { ApiError } = require("../../middlewares/errors/errors");
 
 const createProduct = catchAsync(async (req, res, next) => {
   const images = req.files["images"];
