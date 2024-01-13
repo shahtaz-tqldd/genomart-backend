@@ -5,6 +5,7 @@ const {
 const { productSearchableFields } = require("./product.constant");
 const Product = require("./product.model");
 const { ApiError } = require("../../middlewares/errors/errors");
+const User = require("../user/user.model");
 
 const createProductService = async (payload, imageData) => {
   const requiredFields = ["name", "price", "stock", "category", "description"];
@@ -155,6 +156,24 @@ const getAllCategoryService = async () => {
 //   }
 // }
 
+const addToWishListService = async (action, userId, productId) => {
+  let userData = await User.findById({ _id: userId });
+  const isExist = userData?.wishList?.find((pId) => pId === productId);
+
+  if (action === "add" && isExist) {
+    throw new ApiError(400, "Product already exists in your wishlist");
+  }
+  if (action === "add" && !isExist) {
+    userData.wishList.push(productId);
+  }
+  if (action === "remove") {
+    userData.wishList = userData.wishList.filter((pid) => pid !== productId);
+  }
+  userData.save();
+
+  return userData;
+};
+
 module.exports = {
   createProductService,
   getAllProductService,
@@ -162,4 +181,5 @@ module.exports = {
   getSingleProductService,
   getAllCategoryService,
   // updateUserService,
+  addToWishListService,
 };

@@ -116,6 +116,27 @@ const getAllCategories = catchAsync(async (req, res, next) => {
 //   });
 // });
 
+const addToWishList = catchAsync(async (req, res, next) => {
+  const action = req.body.action;
+  const userId = req.user._id;
+  const productId = req.params.id;
+
+  const result = await ProductService.addToWishListService(
+    action,
+    userId,
+    productId
+  );
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: `Product ${
+      action === "add" ? action + "ed to" : action + "d from"
+    } wishlist!`,
+    data: result,
+  });
+});
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -123,4 +144,5 @@ module.exports = {
   getSingleProduct,
   getAllCategories,
   // updateUser,
+  addToWishList,
 };

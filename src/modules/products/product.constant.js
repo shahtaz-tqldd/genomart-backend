@@ -4,7 +4,7 @@ const productFilterableFields = [
   "ratings",
 ];
 
-const productSearchableFields = ["name"];
+const productSearchableFields = ["name", "brand", "category"];
 
 module.exports = {
   productFilterableFields,

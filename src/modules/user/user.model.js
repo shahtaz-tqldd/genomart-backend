@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema(
         type: String,
       },
     },
+    wishList: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true, versionKey: false }
 );
