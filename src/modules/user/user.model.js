@@ -33,8 +33,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Super Admin", "Admin", "User", "Seller"],
-      default: "User",
+      enum: ["super admin", "admin", "user", "seller"],
+      default: "user",
     },
     image: {
       public_id: {
@@ -46,7 +46,8 @@ const userSchema = new mongoose.Schema(
     },
     wishList: [
       {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
       },
     ],
   },

@@ -19,7 +19,6 @@ const getStats = catchAsync(async (req, res, next) => {
 
 const createBanner = catchAsync(async (req, res, next) => {
   const images = req.files["images"];
-  // const images = [1,2,3];
   const products = JSON.parse(req.body.products);
   const banners = [];
 
@@ -47,7 +46,40 @@ const createBanner = catchAsync(async (req, res, next) => {
   });
 });
 
+const createInfo = catchAsync(async (req, res, next) => {
+  const file = req.file;
+  let imageData = {};
+
+  if (file?.path) {
+    imageData = {
+      url: file?.path,
+      public_id: file?.filename,
+    };
+  }
+  const result = await DashboardService.createInfoService(req.body, imageData);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Settings updated",
+    data: result,
+  });
+});
+
+const getSettingsInfo = catchAsync(async (req, res, next) => {
+  const result = await DashboardService.getSettingsInfoService();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Get Settings Info",
+    data: result,
+  });
+});
+
 module.exports = {
   getStats,
   createBanner,
+  createInfo,
+  getSettingsInfo,
 };

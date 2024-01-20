@@ -14,7 +14,14 @@ router
     UploadImageCloudinary.fields([{ name: "images", maxCount: 3 }]),
     DashboardController.createBanner
   );
-// router.route("/banner/:id").patch(auth(), DashboardController.updateBanner);
-// router.route("/banner/:id").delete(auth(), DashboardController.deleteBanner);
+
+router
+  .route("/settings")
+  .post(
+    auth(),
+    UploadImageCloudinary.single("logo"),
+    DashboardController.createInfo
+  );
+router.route("/settings").get(auth(), DashboardController.getSettingsInfo);
 
 module.exports = router;

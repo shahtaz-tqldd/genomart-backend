@@ -12,7 +12,7 @@ const bannerSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
   },
-});
+}, { _id: false });
 
 const InfoSchema = new mongoose.Schema(
   {
@@ -47,7 +47,7 @@ const InfoSchema = new mongoose.Schema(
     terms: {
       type: String,
     },
-    privacyPolicy: {
+    policy: {
       type: String,
     },
 

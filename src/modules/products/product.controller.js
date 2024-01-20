@@ -118,13 +118,10 @@ const getAllCategories = catchAsync(async (req, res, next) => {
 
 const addToWishList = catchAsync(async (req, res, next) => {
   const action = req.body.action;
-  const userId = req.user._id;
-  const productId = req.params.id;
-
-  const result = await ProductService.addToWishListService(
+  await ProductService.addToWishListService(
     action,
-    userId,
-    productId
+    req.user._id,
+    req.params.id
   );
 
   sendResponse(res, {
@@ -133,6 +130,17 @@ const addToWishList = catchAsync(async (req, res, next) => {
     message: `Product ${
       action === "add" ? action + "ed to" : action + "d from"
     } wishlist!`,
+  });
+});
+
+const getAllWishList = catchAsync(async (req, res, next) => {
+  const userId = req.user._id;
+  const result = await ProductService.getAllWishlistService(userId);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Get all wishlist!",
     data: result,
   });
 });
@@ -145,4 +153,5 @@ module.exports = {
   getAllCategories,
   // updateUser,
   addToWishList,
+  getAllWishList,
 };

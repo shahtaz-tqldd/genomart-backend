@@ -45,12 +45,44 @@ const createBannerService = async (payload) => {
     info = await Info.create({});
   }
 
-  info.banners = payload
+  info.banners = payload;
   const updatedInfo = await info.save();
   return updatedInfo;
+};
+
+const createInfoService = async (payload, imageData) => {
+  let info = await Info.findOne();
+
+  if (info) {
+    const newData = {...payload}
+    if (imageData?.url) {
+      newData.logo = imageData;
+    }
+    Object.assign(info, newData);
+    const updatedInfo = await info.save();
+    return updatedInfo;
+  } 
+  else {
+    const newData = {
+      ...payload,
+    };
+
+    if (imageData?.url) {
+      newData.logo = imageData;
+    }
+    const result = await Info.create(newData);
+    return result;
+  }
+};
+
+const getSettingsInfoService = async () => {
+  const result = await Info.findOne();
+  return result;
 };
 
 module.exports = {
   getStatsService,
   createBannerService,
+  createInfoService,
+  getSettingsInfoService,
 };

@@ -50,12 +50,14 @@ const createOrderService = async (payload) => {
   return result;
 };
 
-const getAllOrderService = async (filters, paginationOptions) => {
-  const { searchTerm, ...filtersData } = filters;
-  const { page, limit, skip, sortBy, sortOrder } = calculatePagination(
-    paginationOptions
-  );
+const getAllOrderService = async (statuses, searchTerm, paginationOptions) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    calculatePagination(paginationOptions);
   const query = {};
+
+  if (statuses && statuses.length > 0) {
+    query.status = { $in: statuses };
+  }
 
   if (searchTerm) {
     const searchConditions = OrderSearchableFields.map((field) => ({
@@ -67,11 +69,6 @@ const getAllOrderService = async (filters, paginationOptions) => {
 
     query.$or = searchConditions;
   }
-  if (Object.keys(filtersData).length) {
-    query.$and = Object.entries(filtersData).map(([field, value]) => ({
-      [field]: value,
-    }));
-  }
 
   const result = await Order.find(query)
     .sort({ [sortBy]: sortOrder })
@@ -79,7 +76,7 @@ const getAllOrderService = async (filters, paginationOptions) => {
     .limit(limit)
     .populate({
       path: "products.productId",
-      select: "name images category price brand", 
+      select: "name images category price brand",
       options: { virtuals: true },
     })
     .populate({
@@ -99,7 +96,6 @@ const getAllOrderService = async (filters, paginationOptions) => {
     data: result,
   };
 };
-
 
 const deleteOrderService = async (id) => {
   const result = await Order.findByIdAndDelete(id);
@@ -142,10 +138,28 @@ const updateOrderService = async (orderId, payload) => {
   }
 };
 
+const changeOrderStatusService = async (orderId, payload) => {
+  const { status } = payload;
+  const order = await Order.findById(orderId);
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
+  order.status = status;
+  if (status === "completed") {
+    order.deliveryDate = new Date();
+  } else {
+    order.deliveryDate = null;
+  }
+  await order.save();
+};
+
 module.exports = {
   createOrderService,
   getAllOrderService,
   deleteOrderService,
   getSingleOrderService,
   updateOrderService,
+  changeOrderStatusService,
 };

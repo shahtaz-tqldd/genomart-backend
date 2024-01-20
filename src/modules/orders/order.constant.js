@@ -3,7 +3,7 @@ const orderFilterableFields = [
   "status",
 ];
 
-const orderSearchableFields = ["user"];
+const orderSearchableFields = ["orderSl", "user"];
 
 module.exports = {
   orderSearchableFields,

@@ -6,6 +6,7 @@ const OrderService = require("./order.services");
 const {
   paginationFields,
 } = require("../../middlewares/helpers/paginationHelper");
+const { ApiError } = require("../../middlewares/errors/errors");
 
 const createOrder = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
@@ -20,10 +21,12 @@ const createOrder = catchAsync(async (req, res, next) => {
 });
 
 const getAllOrders = catchAsync(async (req, res, next) => {
-  const filters = pick(req.query, orderFilterableFields);
+  const statuses = req.query.status && JSON.parse(req.query.status);
+  const searchTerm = req.query.searchTerm;
   const paginationOptions = pick(req.query, paginationFields);
   const result = await OrderService.getAllOrderService(
-    filters,
+    statuses,
+    searchTerm,
     paginationOptions
   );
 
@@ -70,10 +73,26 @@ const updateOrder = catchAsync(async (req, res, next) => {
   });
 });
 
+const changeOrderStatus = catchAsync(async (req, res, next) => {
+  const orderId = req.params.id;
+
+  if (req.user.role !== "admin") {
+    throw new ApiError(404, "Only admin can change the status");
+  }
+
+  await OrderService.changeOrderStatusService(orderId, req.body);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Order updated!",
+  });
+});
+
 module.exports = {
   createOrder,
   getAllOrders,
   deleteOrder,
   getSingleOrder,
   updateOrder,
+  changeOrderStatus,
 };

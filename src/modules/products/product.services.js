@@ -157,21 +157,78 @@ const getAllCategoryService = async () => {
 // }
 
 const addToWishListService = async (action, userId, productId) => {
+  const pObjId = new mongoose.Types.ObjectId(productId);
   let userData = await User.findById({ _id: userId });
-  const isExist = userData?.wishList?.find((pId) => pId === productId);
+
+  const isExist = userData?.wishList?.includes(pObjId);
 
   if (action === "add" && isExist) {
     throw new ApiError(400, "Product already exists in your wishlist");
   }
   if (action === "add" && !isExist) {
-    userData.wishList.push(productId);
+    userData.wishList.push(pObjId);
   }
-  if (action === "remove") {
-    userData.wishList = userData.wishList.filter((pid) => pid !== productId);
+  if (action === "remove" && isExist) {
+    userData.wishList = userData.wishList.filter((pid) => pid?.toString() !== productId);
+  }
+  if (action === "remove" && !isExist) {
+    throw new ApiError(400, "Product already removed!");
   }
   userData.save();
+};
 
-  return userData;
+const getAllWishlistService = async (userId) => {
+  try {
+    const userData = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "wishList",
+          foreignField: "_id",
+          as: "wishlistDetails",
+        },
+      },
+      {
+        $project: {
+          wishlistDetails: {
+            _id: 1,
+            name: 1,
+            price: 1,
+            colors: 1,
+            sizes: 1,
+            brand: 1,
+            category: 1,
+            stock: 1,
+            images: 1,
+          },
+        },
+      },
+    ]);
+
+    if (userData.length === 0) {
+      throw new Error("User not found");
+    }
+
+    // Extract relevant information from the populated wishlist
+    const wishlistDetails = userData[0].wishlistDetails.map((product) => ({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      colors: product.colors,
+      sizes: product.sizes,
+      brand: product.brand,
+      category: product.category,
+      stock: product.stock,
+      images: product.images,
+    }));
+
+    return wishlistDetails;
+  } catch (error) {
+    throw error;
+  }
 };
 
 module.exports = {
@@ -182,4 +239,5 @@ module.exports = {
   getAllCategoryService,
   // updateUserService,
   addToWishListService,
+  getAllWishlistService,
 };

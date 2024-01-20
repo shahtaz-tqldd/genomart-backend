@@ -38,6 +38,9 @@ const OrderSchema = new mongoose.Schema(
       enum: ["pending", "processing", "sent", "completed", "cancel", "refund"],
       default: "pending",
     },
+    deliveryDate: {
+      type: Date,
+    },
     products: [ProductSchema],
   },
   { timestamps: true, versionKey: false }

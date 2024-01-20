@@ -17,5 +17,6 @@ router.route("/categories").get(ProductController.getAllCategories);
 router.route("/:id").get(ProductController.getSingleProduct);
 router.route("/:id").delete(auth(), ProductController.deleteProduct);
 router.route("/wishlist/:id").patch(auth(), ProductController.addToWishList);
+router.route("/wishlist/all").get(auth(), ProductController.getAllWishList);
 
 module.exports = router;
