@@ -10,13 +10,18 @@ const app = express();
 
 app.use(cookieParser());
 
+const allowedOrigins = [
+  "https://genomart.netlify.app",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    // origin: "*",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
