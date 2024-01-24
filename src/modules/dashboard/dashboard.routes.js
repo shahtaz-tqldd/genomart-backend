@@ -6,7 +6,7 @@ const { UploadImageCloudinary } = require("../../middlewares/uploadCloudinary");
 const router = express.Router();
 
 router.route("/stats").get(auth(), DashboardController.getStats);
-// router.route("/banner").get(auth(), DashboardController.getBanner);
+router.route("/special-offer").patch(auth(), DashboardController.addToSpecialOffer);
 router
   .route("/banner")
   .post(
@@ -22,6 +22,7 @@ router
     UploadImageCloudinary.single("logo"),
     DashboardController.createInfo
   );
-router.route("/settings").get(auth(), DashboardController.getSettingsInfo);
+
+router.route("/settings").get(DashboardController.getSettingsInfo);
 
 module.exports = router;

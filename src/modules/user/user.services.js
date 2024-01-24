@@ -19,19 +19,7 @@ const createUserService = async (payload) => {
     throw new ApiError(400, "Email already exist");
   }
 
-  // if (!imageData.url) {
-  //   throw new ApiError(400, "Please provide profile image");
-  // }
-
-  const newData = {
-    ...payload,
-  };
-
-  // if (imageData.url) {
-  //   newData.profileImage = imageData;
-  // }
-
-  const result = await User.create(newData);
+  const result = await User.create(payload);
 
   return result;
 };

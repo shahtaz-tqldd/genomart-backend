@@ -1,18 +1,25 @@
 const mongoose = require("mongoose");
 
-const ProductSchema = mongoose.Schema({
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-    required: true,
+const ProductSchema = mongoose.Schema(
+  {
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    color: {
+      type: String,
+    },
+    size: {
+      type: String,
+    },
+    quantity: {
+      type: Number,
+      default: 1,
+    },
   },
-  color: {
-    type: String,
-  },
-  size: {
-    type: String,
-  },
-});
+  { _id: false }
+);
 
 const OrderSchema = new mongoose.Schema(
   {

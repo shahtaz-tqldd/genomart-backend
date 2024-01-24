@@ -46,6 +46,19 @@ const createBanner = catchAsync(async (req, res, next) => {
   });
 });
 
+const addToSpecialOffer = catchAsync(async (req, res, next) => {
+  const productId = req.body.productId
+
+  const result = await DashboardService.addToSpecialOfferService(productId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Special product added",
+    data: result,
+  });
+});
+
 const createInfo = catchAsync(async (req, res, next) => {
   const file = req.file;
   let imageData = {};
@@ -68,7 +81,6 @@ const createInfo = catchAsync(async (req, res, next) => {
 
 const getSettingsInfo = catchAsync(async (req, res, next) => {
   const result = await DashboardService.getSettingsInfoService();
-
   sendResponse(res, {
     statusCode: 200,
     success: true,
@@ -82,4 +94,5 @@ module.exports = {
   createBanner,
   createInfo,
   getSettingsInfo,
+  addToSpecialOffer
 };

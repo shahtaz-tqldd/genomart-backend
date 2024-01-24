@@ -6,15 +6,11 @@ const { OrderSearchableFields } = require("./order.constant");
 const Order = require("./order.model");
 const { ApiError } = require("../../middlewares/errors/errors");
 const User = require("../user/user.model");
+const generateId = require("../../utiles/generateRandomNumber");
+const Product = require("../products/product.model");
 
 const createOrderService = async (payload) => {
   const user = await User.findById(payload.customer.id);
-
-  const total = await Order.countDocuments();
-  function geenrateId(id) {
-    return `#${("0000" + id).slice(-4)}`;
-  }
-  const sl = geenrateId(total + 1);
 
   if (!user) {
     throw new Error("User not found");
@@ -33,10 +29,10 @@ const createOrderService = async (payload) => {
     user.street = payload.customer.street;
   }
 
-  // Save the updated user
   await user.save();
 
-  // Create a new order
+  const sl = await generateId();
+
   const orderData = {
     user: payload.customer.id,
     payment: payload.payment.method,
@@ -45,18 +41,41 @@ const createOrderService = async (payload) => {
     orderSl: sl,
   };
 
+  await Promise.all(
+    payload.products.map(async (orderProduct) => {
+      const product = await Product.findById(orderProduct.productId);
+      if (product) {
+        product.numSold += orderProduct.quantity;
+        product.stock -= orderProduct.quantity;
+        if (product.stock >= 0) {
+          await product.save();
+        } else {
+          throw new ApiError(404, "Product stock out");
+        }
+      }
+    })
+  );
+
   const result = await Order.create(orderData);
 
   return result;
 };
 
-const getAllOrderService = async (statuses, searchTerm, paginationOptions) => {
+const getAllOrderService = async (
+  userId,
+  statuses,
+  searchTerm,
+  paginationOptions
+) => {
   const { page, limit, skip, sortBy, sortOrder } =
     calculatePagination(paginationOptions);
   const query = {};
 
   if (statuses && statuses.length > 0) {
     query.status = { $in: statuses };
+  }
+  if (userId) {
+    query.user = new mongoose.Types.ObjectId(userId);
   }
 
   if (searchTerm) {

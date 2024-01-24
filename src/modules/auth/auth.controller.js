@@ -59,7 +59,33 @@ const refreshToken = catchAsync(async (req, res, next) => {
   }
 });
 
+const socialLogin = catchAsync(async (req, res, next) => {
+  const { refreshToken, accessToken, user } =
+    await AuthService.socialLoginService(req.body);
+
+  const cookieOptions = {
+    secure: config.env === "production",
+    httpOnly: true,
+    sameSite: "strict",
+    secure: true,
+  };
+
+  res.cookie("refreshToken", refreshToken, cookieOptions);
+  res.cookie("accessToken", accessToken, cookieOptions);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Successfully logged in!",
+    data: {
+      user,
+      token: accessToken,
+    },
+  });
+});
+
 module.exports = {
   login,
   refreshToken,
+  socialLogin,
 };

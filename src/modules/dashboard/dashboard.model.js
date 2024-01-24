@@ -38,9 +38,10 @@ const InfoSchema = new mongoose.Schema(
       unique: true,
       validate: [validator.isEmail, "Invalid Email"],
     },
-    brandColor: {
-      type: String,
-    },
+    specialOffer: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    }],
     description: {
       type: String,
     },

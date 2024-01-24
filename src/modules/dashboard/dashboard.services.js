@@ -28,6 +28,19 @@ const getStatsService = async () => {
     status: "completed",
   });
 
+  // Total categories
+  const totalCategories = (await Product.distinct("category")).length;
+
+  // Total stock
+  const totalStock = await Product.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalStock: { $sum: "$stock" },
+      },
+    },
+  ]);
+
   return {
     totalProducts,
     totalUsers,
@@ -36,6 +49,8 @@ const getStatsService = async () => {
     totalProcessingOrders,
     totalSentOrders,
     totalCompletedOrders,
+    totalCategories,
+    totalStock: totalStock.length > 0 ? totalStock[0].totalStock : 0,
   };
 };
 
@@ -54,15 +69,14 @@ const createInfoService = async (payload, imageData) => {
   let info = await Info.findOne();
 
   if (info) {
-    const newData = {...payload}
+    const newData = { ...payload };
     if (imageData?.url) {
       newData.logo = imageData;
     }
     Object.assign(info, newData);
     const updatedInfo = await info.save();
     return updatedInfo;
-  } 
-  else {
+  } else {
     const newData = {
       ...payload,
     };
@@ -76,8 +90,28 @@ const createInfoService = async (payload, imageData) => {
 };
 
 const getSettingsInfoService = async () => {
-  const result = await Info.findOne();
+  const result = await Info.findOne().populate(
+    "specialOffer",
+    "name _id images brand category price"
+  );
   return result;
+};
+
+const addToSpecialOfferService = async (id) => {
+  const productId = new mongoose.Types.ObjectId(id);
+  let info = await Info.findOne();
+
+  if (!info) {
+    info = await Info.create({});
+  }
+
+  if (!info.specialOffer.some((pId) => pId.toString() === id)) {
+    info.specialOffer.push(productId);
+    const updatedInfo = await info.save();
+    return updatedInfo;
+  } else {
+    return info;
+  }
 };
 
 module.exports = {
@@ -85,4 +119,5 @@ module.exports = {
   createBannerService,
   createInfoService,
   getSettingsInfoService,
+  addToSpecialOfferService,
 };

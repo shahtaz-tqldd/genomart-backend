@@ -22,9 +22,11 @@ const createOrder = catchAsync(async (req, res, next) => {
 
 const getAllOrders = catchAsync(async (req, res, next) => {
   const statuses = req.query.status && JSON.parse(req.query.status);
+  const userId = req.query.myOrder ? req.user._id : null;
   const searchTerm = req.query.searchTerm;
   const paginationOptions = pick(req.query, paginationFields);
   const result = await OrderService.getAllOrderService(
+    userId,
     statuses,
     searchTerm,
     paginationOptions

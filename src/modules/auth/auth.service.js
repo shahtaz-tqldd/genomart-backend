@@ -16,7 +16,7 @@ const loginService = async (payload) => {
   }
 
   const { _id, role } = isExistUser;
-  
+
   const isMatchPassword = await bcrypt.compare(password, isExistUser?.password);
 
   if (!isMatchPassword) {
@@ -41,6 +41,49 @@ const loginService = async (payload) => {
     refreshToken,
   };
 };
+
+const socialLoginService = async (payload) => {
+  const { fullname, email, photoURL } = payload;
+
+  const isExistUser = await User.findOne({ email });
+
+  if (!isExistUser) {
+    const newUser = await User.create({
+      fullname,
+      email,
+      image: { url: photoURL, public_id: null },
+    });
+
+    if (newUser) {
+      return createTokens(newUser);
+    }
+  }
+
+  return createTokens(isExistUser);
+};
+
+const createTokens = async (user) => {
+  const { _id, email, role } = user;
+
+  const accessToken = await jwtHelpers.createToken(
+    { _id, email, role },
+    config.jwt.secret,
+    config.jwt.expires_in
+  );
+
+  const refreshToken = await jwtHelpers.createToken(
+    { _id, email, role },
+    config.jwt.refresh_secret,
+    config.jwt.refresh_expires_in
+  );
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+  };
+};
+
 
 const refreshToken = async (token) => {
   //verify token
@@ -86,4 +129,5 @@ const refreshToken = async (token) => {
 module.exports = {
   loginService,
   refreshToken,
+  socialLoginService,
 };
