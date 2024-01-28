@@ -7,9 +7,7 @@ const { ApiError } = require("../../middlewares/errors/errors");
 const loginService = async (payload) => {
   const { email, password } = payload;
 
-  const isExistUser = await User.findOne({
-    email,
-  });
+  const isExistUser = await User.findOne({ email });
 
   if (!isExistUser) {
     throw new ApiError(400, "User does not exist");
@@ -83,7 +81,6 @@ const createTokens = async (user) => {
     refreshToken,
   };
 };
-
 
 const refreshToken = async (token) => {
   //verify token

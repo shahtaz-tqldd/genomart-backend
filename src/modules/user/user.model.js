@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const bcrypt = require("bcrypt");
-const config = require("../../../config");
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,7 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
     },
     house: {
       type: String,
@@ -44,6 +42,10 @@ const userSchema = new mongoose.Schema(
         type: String,
       },
     },
+    isDisable: {
+      type: Boolean,
+      default: false,
+    },
     wishList: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -53,18 +55,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true, versionKey: false }
 );
-
-userSchema.pre("save", async function (next) {
-  // Check if the password field is modified or if it's a new user
-  if (this.isModified("password") || this.isNew) {
-    this.password = await bcrypt.hash(
-      this.password,
-      Number(config.bcrypt_salt_rounds)
-    );
-  }
-
-  next();
-});
 
 const User = mongoose.model("User", userSchema);
 

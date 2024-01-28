@@ -19,7 +19,6 @@ const getStats = catchAsync(async (req, res, next) => {
 
 const createBanner = catchAsync(async (req, res, next) => {
   const images = req.files["images"];
-  const products = JSON.parse(req.body.products);
   const banners = [];
 
   if (images && images.length > 0) {
@@ -27,13 +26,8 @@ const createBanner = catchAsync(async (req, res, next) => {
       banners.push({
         public_id: image.filename,
         url: image.path,
-        productId: products[i],
       });
     });
-  }
-
-  if (!banners[0]?.url) {
-    throw new ApiError(400, `Please upload some product images`);
   }
 
   const result = await DashboardService.createBannerService(banners);
@@ -41,7 +35,7 @@ const createBanner = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "create dashboard banner",
+    message: "Banner updated",
     data: result,
   });
 });

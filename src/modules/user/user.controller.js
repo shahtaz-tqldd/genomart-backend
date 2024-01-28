@@ -1,21 +1,29 @@
 const {
   paginationFields,
 } = require("../../middlewares/helpers/paginationHelper");
+const jwtHelpers = require("../../middlewares/helpers/helpers");
 const config = require("../../../config");
 const catchAsync = require("../../utiles/catchAsync");
 const pick = require("../../middlewares/helpers/pick");
 const sendResponse = require("../../utiles/sendResponse");
 const { userFilterableFields } = require("./user.constant");
 const UserService = require("./user.services");
-const AuthService = require("../auth/auth.service");
+const { ApiError } = require("../../middlewares/errors/errors");
 
 const createUser = catchAsync(async (req, res, next) => {
-  await UserService.createUserService(req.body);
+  const result = await UserService.createUserService(req.body);
 
-  const { refreshToken, accessToken, user } = await AuthService.loginService({
-    email: req.body.email,
-    password: req.body.password,
-  });
+  const accessToken = jwtHelpers.createToken(
+    { _id: result?._id, email: result?.email, role: result?.role },
+    config.jwt.secret,
+    config.jwt.expires_in
+  );
+
+  const refreshToken = jwtHelpers.createToken(
+    { _id: result?._id, email: result?.email, role: result?.role },
+    config.jwt.refresh_secret,
+    config.jwt.refresh_expires_in
+  );
 
   const cookieOptions = {
     secure: config.env === "production",
@@ -32,7 +40,7 @@ const createUser = catchAsync(async (req, res, next) => {
     success: true,
     message: "New user created and logged in!",
     data: {
-      user,
+      user: result,
       token: accessToken,
     },
   });
@@ -83,7 +91,6 @@ const getSingleUser = catchAsync(async (req, res, next) => {
 
 const updateUser = catchAsync(async (req, res, next) => {
   const file = req.file;
-
   let imageData = {};
 
   if (file?.path) {
@@ -93,19 +100,52 @@ const updateUser = catchAsync(async (req, res, next) => {
     };
   }
 
-  const userId = req.params.id;
-  const updateData = req.body;
-
   const result = await UserService.updateUserService(
-    userId,
-    updateData,
+    req.params.id,
+    req.body,
     imageData
   );
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "User updated successfully",
+    message: "Profile updated!",
+    data: result,
+  });
+});
+
+const disableUser = catchAsync(async (req, res, next) => {
+  if (req?.user?.role !== "admin") {
+    throw new ApiError(404, "You are not authorize");
+  }
+
+  const result = await UserService.disableUserService(
+    req?.params?.userId,
+    req?.query?.disable
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: `User ${req?.query?.disable ? "disabled" : "enabled"}`,
+    data: result,
+  });
+});
+
+const updateRole = catchAsync(async (req, res, next) => {
+  if (req?.user?.role !== "admin") {
+    throw new ApiError(404, "You are not authorize");
+  }
+
+  const result = await UserService.updateRoleService(
+    req?.params?.userId,
+    req?.query?.role
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: `User updated to ${req?.query?.role}`,
     data: result,
   });
 });
@@ -116,4 +156,6 @@ module.exports = {
   getMyProfile,
   getSingleUser,
   updateUser,
+  disableUser,
+  updateRole,
 };

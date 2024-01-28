@@ -5,18 +5,18 @@ const UserController = require("./user.controller");
 
 const router = express.Router();
 
-router.post("/", UserController.createUser);
-
 router.get("/", UserController.getAllUsers);
-
+router.post("/", UserController.createUser);
 router.get("/profile", auth(), UserController.getMyProfile);
-
-router.get("/:userId", UserController.getSingleUser);
-
 router.patch(
-  "/:id",
+  "/update/:id",
+  auth(),
   UploadImageCloudinary.single("profileImage"),
   UserController.updateUser
 );
+
+router.get("/:userId", UserController.getSingleUser);
+router.patch("/:userId", auth(), UserController.disableUser);
+router.patch("/update-role/:userId", auth(), UserController.updateRole);
 
 module.exports = router;

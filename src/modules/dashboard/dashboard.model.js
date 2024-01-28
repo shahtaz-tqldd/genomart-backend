@@ -7,11 +7,7 @@ const bannerSchema = mongoose.Schema({
   },
   url: {
     type: String,
-  },
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-  },
+  }
 }, { _id: false });
 
 const InfoSchema = new mongoose.Schema(

@@ -1,5 +1,9 @@
+const bcrypt = require("bcrypt");
+const config = require("../../../config");
 const { default: mongoose } = require("mongoose");
-const { calculatePagination } = require("../../middlewares/helpers/paginationHelper");
+const {
+  calculatePagination,
+} = require("../../middlewares/helpers/paginationHelper");
 const { userSearchableFields } = require("./user.constant");
 const User = require("./user.model");
 const { ApiError } = require("../../middlewares/errors/errors");
@@ -18,6 +22,12 @@ const createUserService = async (payload) => {
   if (isExistUser) {
     throw new ApiError(400, "Email already exist");
   }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.password,
+    Number(config.bcrypt_salt_rounds)
+  );
+  payload.password = hashedPassword;
 
   const result = await User.create(payload);
 
@@ -116,12 +126,32 @@ const getSingleUserService = async (userId) => {
   return result[0];
 };
 
-
-async function updateUserService(userId, updateData, imageData) {
+const updateUserService = async (userId, updateData, imageData) => {
   const id = new mongoose.Types.ObjectId(userId);
 
   if (imageData?.url) {
-    updateData.profileImage = imageData;
+    updateData.image = imageData;
+  }
+
+  if (updateData?.newPass) {
+    const user = await User.findById(id);
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      updateData?.currentPass,
+      user?.password
+    );
+
+    if (!isPasswordValid) {
+      throw new ApiError(400, "Current password is incorrect");
+    }
+
+    updateData.password = await bcrypt.hash(
+      updateData.newPass,
+      Number(config.bcrypt_salt_rounds)
+    );
   }
 
   try {
@@ -139,7 +169,37 @@ async function updateUserService(userId, updateData, imageData) {
   } catch (error) {
     throw new ApiError(500, "Internal Server Error", error);
   }
-}
+};
+
+const disableUserService = async (userId, disable) => {
+  const id = new mongoose.Types.ObjectId(userId);
+
+  const result = await User.updateOne(
+    { _id: id },
+    { $set: { isDisable: disable } }
+  );
+
+  if (result.nModified === 0) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return result;
+};
+
+const updateRoleService = async (userId, role) => {
+  const id = new mongoose.Types.ObjectId(userId);
+
+  const result = await User.updateOne(
+    { _id: id },
+    { $set: { role } }
+  );
+
+  if (result.nModified === 0) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return result;
+};
 
 module.exports = {
   createUserService,
@@ -147,4 +207,6 @@ module.exports = {
   getMyProfileService,
   getSingleUserService,
   updateUserService,
+  disableUserService,
+  updateRoleService
 };
