@@ -13,6 +13,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   "https://genomart.netlify.app",
   "http://localhost:5173",
+  "https://genomart.vercel.app",
 ];
 
 app.use(

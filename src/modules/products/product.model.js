@@ -11,6 +11,25 @@ const imageSchema = mongoose.Schema({
   },
 });
 
+const sizeSchema = new mongoose.Schema({
+  size: {
+    type: String,
+    required: true,
+  },
+  variations: [
+    {
+      color: {
+        type: String,
+        required: true,
+      },
+      totalCount: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
+});
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -30,16 +49,7 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
     },
-    sizes: [
-      {
-        type: String,
-      },
-    ],
-    colors: [
-      {
-        type: String,
-      },
-    ],
+    sizes: [sizeSchema],
     specialOffer: {
       type: String,
     },
@@ -56,7 +66,12 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-
+    tags: [
+      {
+        type: String,
+        enum: ["hero", "specialDeal", "bestDeal"],
+      },
+    ],
     images: [imageSchema],
   },
   { timestamps: true, versionKey: false }
